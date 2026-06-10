@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Beto - Generador de Prompts Pro My House</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 30px;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+        }
+        .panel {
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #c5a059;
+            width: 420px;
+        }
+        .salida {
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            width: 520px;
+            display: flex;
+            flex-direction: column;
+        }
+        h2 { margin-top: 0; color: #c5a059; font-size: 20px; }
+        label { display: block; margin-top: 12px; font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;}
+        input, textarea, select {
+            width: 100%; padding: 10px; margin-top: 5px;
+            background: #0e0e0e; border: 1px solid #333;
+            color: #ffd700; border-radius: 6px; box-sizing: border-box;
+            font-family: monospace;
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #c5a059; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .row-grid { display: grid; grid-template-columns: 1fr 80px; gap: 8px; }
+        
+        textarea#prompt-out {
+            flex-grow: 1; resize: none; background: #0a0a0a; color: #00ff00;
+            font-size: 13px; line-height: 1.4; padding: 15px;
+        }
+        
+        .botones { display: flex; gap: 10px; margin-top: 15px; }
+        button {
+            flex: 1; padding: 12px; border: none; border-radius: 6px;
+            font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase;
+        }
+        .btn-generar { background: #c5a059; color: #000; }
+        .btn-generar:hover { background: #e0b86a; }
+        .btn-copiar { background: #2a2a2a; color: #fff; border: 1px solid #555; }
+        .btn-copiar:hover { background: #444; }
+        .btn-txt { background: #1a3a1a; color: #7fff7f; border: 1px solid #2d6a2d; }
+        .btn-txt:hover { background: #255225; }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <h2>DATOS DEL ATLETA</h2>
+        
+        <div class="grid-2">
+            <div>
+                <label>Nombre</label>
+                <input type="text" id="in-nombre" value="Mel">
+            </div>
+            <div>
+                <label>Apodo / Título</label>
+                <input type="text" id="in-apodo" value="La Negra">
+            </div>
+        </div>
+        
+        <div class="grid-2">
+            <div>
+                <label>Bandera (e.g. Argentina Flag)</label>
+                <input type="text" id="in-flag-desc" value="Argentina Flag">
+            </div>
+            <div>
+                <label>Código (e.g. ARG, UKR)</label>
+                <input type="text" id="in-flag-code" value="ARG">
+            </div>
+        </div>
+
+        <label>Silueta Abajo Derecha (Disciplina)</label>
+        <select id="in-silueta">
+            <option value="specific pole dance silhouette">Pole Dance (Estándar)</option>
+            <option value="silhouette of a woman performing a handspring on a pole">Pole Dance - Handspring</option>
+            <option value="silhouette of an athlete performing a handstand on parallettes">Verticales / Handstand (Paralelas)</option>
+            <option value="silhouette of an athlete performing a front lever calisthenics move">Calistenia - Front Lever</option>
+            <option value="silhouette of a muscular bodybuilder highlighting strength">Fuerza / Musculación</option>
+        </select>
+
+        <label>Props / En las manos</label>
+        <input type="text" id="in-props" value="En una mano le pones una botella de Cerveza y en la otra un mate">
+
+        <label>Ropa / Estilo</label>
+        <input type="text" id="in-ropa" value="Ropa estilo como la foto, con un top y un poco más fitness no mucho">
+
+        <label>STATS (Fila 1 a 4)</label>
+        <div class="row-grid">
+            <input type="text" id="in-l1" value="Muscle arm (Strength)">
+            <input type="number" id="in-v1" value="100">
+            <input type="text" id="in-l2" value="Poledance (Charisma)">
+            <input type="number" id="in-v2" value="1000">
+            <input type="text" id="in-l3" value="Sentadillas">
+            <input type="number" id="in-v3" value="1500">
+            <input type="text" id="in-l4" value="Fernet">
+            <input type="number" id="in-v4" value="500">
+        </div>
+
+        <label>Poder Especial / Texto Inferior</label>
+        <textarea id="in-texto" rows="2">Cumple años todos los días! - Actualmente FAN de la RENGA</textarea>
+
+        <button class="btn-generar" style="width: 100%; margin-top: 20px;" onclick="generarPrompt()">Generar Prompt</button>
+    </div>
+
+    <div class="salida">
+        <h2>PROMPT MAESTRO AUTOMÁTICO</h2>
+        <textarea id="prompt-out" readonly></textarea>
+        
+        <div class="botones">
+            <button class="btn-copiar" onclick="copiarPrompt()">📋 Copiar</button>
+            <button class="btn-txt" onclick="descargarTXT()">💾 Guardar TXT</button>
+        </div>
+    </div>
+
+    <script>
+        function generarPrompt() {
+            const nombre = document.getElementById('in-nombre').value;
+            const apodo = document.getElementById('in-apodo').value;
+            const flagDesc = document.getElementById('in-flag-desc').value;
+            const flagCode = document.getElementById('in-flag-code').value;
+            const silueta = document.getElementById('in-silueta').value;
+            const props = document.getElementById('in-props').value;
+            const ropa = document.getElementById('in-ropa').value;
+            
+            const l1 = document.getElementById('in-l1').value; const v1 = document.getElementById('in-v1').value;
+            const l2 = document.getElementById('in-l2').value; const v2 = document.getElementById('in-v2').value;
+            const l3 = document.getElementById('in-l3').value; const v3 = document.getElementById('in-v3').value;
+            const l4 = document.getElementById('in-l4').value; const v4 = document.getElementById('in-v4').value;
+            const texto = document.getElementById('in-texto').value;
+
+            const promptEstructurado = `A single, high-resolution, ultra-detailed golden collectible trading card, identical in style, beveled gold frame, carbon fiber texture, stats panel layout, logo positioning, and premium high-gloss finish to image_d85210.jpg. All background etched gym texts ('FUERZA Flexi Calistenia', 'My House POLISTENIA') and the top-right 'MY HOUSE POLISTENIA' logo are preserved exactly (cite: 1, 2). 
+
+The portrait area features a high-fidelity stylized portrait of [${nombre}]. His/her facial features and facciones are rendered with photo-realism but with an illustrative cómic filter, preserving likeness completely (cite: 2). [${props}] He/She is wearing stylized [${ropa}] and standing in the identical detailed gym environment seen in image_d85210.jpg (cite: 1).      
+
+The statistical box (top-left) retains 'OVR' and updates all four icons and values based on this data:
+Row 1: ${l1} with value: [${v1}].   
+Row 2: ${l2} with value: [${v2}].      
+Row 3: ${l3} with value: [${v3}].      
+Row 4: ${l4} with value: [${v4}].      
+(Do not write icon labels, only numbers).
+
+The central gold banner text is changed to read: '[${nombre}] - [${apodo}]' in golden text style (cite: 1).      
+The details box (below banner) reads: 'TEAM: MY HOUSE POLISTENIA' (Fixed) and 'NATION: [${flagDesc.split(' ')[0]}]'.      
+The bottom-middle text box reads: '[${texto}]'.      
+
+The bottom-left box retains the ${flagDesc} and '${flagCode}' text from image_d85210.jpg.  
+The bottom-right box features a ${silueta} from image_d85210.jpg.
+The small diamond detail in the bottom corner is erased 
+Dramatic, warm golden lighting and premium texturing render the entire card (cite: 2).
+NO LAS HAGAS EN CARICATURA`;
+
+            document.getElementById('prompt-out').value = promptEstructurado;
+        }
+
+        function copiarPrompt() {
+            const copyText = document.getElementById("prompt-out");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Prompt copiado.");
+        }
+
+        function descargarTXT() {
+            const texto = document.getElementById("prompt-out").value;
+            const nombre = document.getElementById("in-nombre").value.replace(/\\s+/g, "_").toLowerCase();
+            const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `prompt_${nombre}.txt`;
+            link.click();
+        }
+
+        window.onload = generarPrompt;
+    </script>
+</body>
+</html>
